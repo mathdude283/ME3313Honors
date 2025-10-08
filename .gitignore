@@ -1,4 +1,5 @@
-.venv/
+.vscode
+.venv
 latex/**
 !latex/*.pdf
 !latex/*.tex

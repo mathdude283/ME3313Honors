@@ -127,15 +127,40 @@
         \includegraphics[width=1\linewidth]{MultiLoopClosureAnnotated.png}
         \caption{Diagram showing vector for Multiloop Equations}\label{fig:multiloop}
     \end{figure}
-    
+    \FloatBarrier\section*{\sethlcolor{lightgreen}\hl{Code Introduction}}
+    \hl{To solve these equations, I used Python code taking advantage of the fsolve function from the SciPy library. This is a numerical solver function that takes in a set of equations and initial guesses and outputs a solution. Depending on the initial guess, this solution can be incorrect, or a valid solution but not the correct solution for the actual problem constraints. To increase the chancess significantly of a valid solution being generated, I generated a range of initial condition options for each unknown variable and then generated a solution for every combination of initial conditions. Taking these, I kept only ones that had little error when plugged back into the multiloop equations and each variable was within an estimated range of motion. The known link lengths that were plugged into the equations are shown below, and the input length is shown under that. These measurements are only estimates, however, because I found them by finding the length of the loader in its documentation, then measured the length in a side view image of the loader. I took the ratio of these, then measured each link length and and angle in the picture and multiplied each link length by the ratio to get the estimated actual link length. Angles however are not affected by scaling an image up or down though, so I used the measured angles as they were.}
+    \FloatBarrier\section*{\hl{Link Measurements}}
+    \begin{align*}
+        R_{BA}&=24.4 \text{ in.} \\
+        R_{DB}&=19.8 \text{ in.} \\
+        R_{CA}&=8.5 \text{ in.} \\
+        \theta_{CA}&=293.04^\circ \\
+        R_{GC}&=25.5 \text{ in.} \\
+        R_{DE}&=14.7 \text{ in.} \\
+        R_{EF}&=33.9 \text{ in.} \\
+        R_{FC}&=45.9 \text{ in.} \\
+        \theta_{FC}&=5.44^\circ \\
+        \beta_{D}&=92.47^\circ \\
+    \end{align*}
+
+    \FloatBarrier\section*{\hl{Input Link Length}}
+    \begin{equation*}
+        R_{DC}=29.72 \text{ in.}
+    \end{equation*}
+        
     \FloatBarrier\section*{Multiloop Solver Code}
     
     \inputminted[python3=true]{python}{../code/main.py}
 
-    %\section*{Python Output}
-    %\begin{minted}[linenos=false]{pwsh-session}
-%PS C:\...\CodeTemplate> python HelloWorld.py
-%Hello, world!
-   % \end{minted}
+    \section*{Multiloop Solver Output}
+    \begin{minted}[linenos=false]{pwsh-session}
+PS C:\...\Honors> python code/main.py
+Theta_BA = 82.2 degrees
+Theta_DB = 335.1 degrees
+Theta_GC = 52.9 degrees
+Theta_DG = 52.9 degrees
+Theta_DE = 67.6 degrees
+Theta_EF = 170.2 degrees
+    \end{minted}
 
 \end{document}
