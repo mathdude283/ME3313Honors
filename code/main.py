@@ -1,6 +1,7 @@
 import numpy as np
 import math
 from scipy.optimize import fsolve
+import matplotlib.pyplot as plt
 from warnings import catch_warnings
 
 act_img_ratio = 0.1718 # Approximate ratio of length without bucket from specs in inches over length without bucket from image in mm
@@ -17,6 +18,8 @@ ref = 197.12*act_img_ratio
 rfc = 267.12*act_img_ratio
 thetafc = math.radians(5.44) # angle from positive x-axis to ground link, which is Rea
 betad = math.radians(92.47) # Angle from DB to DA
+rpb = 439.41*act_img_ratio # distance from point b to the bucket coupler point
+betab = math.radians(7.41) # Angle from rpb to rdb
 
 
 # Inputs
@@ -68,32 +71,44 @@ gen_solutions = set()
 
 # Check if solution is in approximate range of motion
 def result_check(result) -> bool:
-    if result[0] > 135 or result[0] < 45:
+    if result[0] > 3*pi/4 or result[0] < pi/4:
 
         return False
-    if result[1] > 90 and result[1] < 270:
+    if result[1] > pi/2 and result[1] < 3*pi/2:
 
         return False
-    if result[2] > 90:
+    if result[2] > pi/2:
 
         return False
-    if result[3] > 90:
+    if result[3] > pi/2:
 
         return False
-    if result[4] > 180:
+    if result[4] > pi:
 
         return False
-    if result[5] < 90 or result[5] > 180:
+    if result[5] < pi/2 or result[5] > pi:
 
         return False
     return True
 
 # Check error of solution
-def calc_err(result, eq=eqs):
+"""def calc_err(result, eq=eqs):
     err = eq(result)
     err_sum = 0
     for i in range(len(err)):
         err_sum += float(np.abs(err[i]))
+    return err_sum"""
+
+def calc_err(result, eq=eqs, unkn_len_ind=unknown_length_indices):
+    err = eq(result)
+    err_sum = 0
+    for i in range(len(err)):
+        if i in unkn_len_ind:
+            calc_err_amt = float(np.abs(err[i]))
+        else:
+            calc_err_amt = float(np.abs(err[i])) % 2*pi
+            calc_err_amt = min(calc_err_amt, 2*pi - calc_err_amt)
+        err_sum += calc_err_amt
     return err_sum
     
 
@@ -108,11 +123,11 @@ def solution_gen(current_guess: list[float] | None = None, guess_per_var: int = 
         with catch_warnings(record=True):
             sol = fsolve(eq, current_guess)
             curr_error = calc_err(sol, eq)
-            for numb in range(len(sol)):
-                if not numb in unkn_len_ind:
-                    sol[numb] = math.degrees(sol[numb]) % 360
-                sol[numb] = round(sol[numb], 1)
-            if result_check(sol) and curr_error < 1:
+            #for numb in range(len(sol)):
+                #if not numb in unkn_len_ind:
+                    #sol[numb] = sol[numb] % (2*pi)
+                #sol[numb] = round(sol[numb], 1)
+            if result_check(sol) and curr_error < 0.1:
                 output.add(tuple(sol))
         return
     
@@ -123,21 +138,82 @@ def solution_gen(current_guess: list[float] | None = None, guess_per_var: int = 
         solution_gen(current_guess=current_guess+[guess], guess_per_var=guess_per_var, index=index+1, initial_min=initial_min, initial_max=initial_max, output=output, eq=eq, num_var=num_var, unkn_len_ind=unkn_len_ind)
     return
 
+
+# Absolute position of bucket coupler point with poiny C as the origin, positive x-axis to the right
+def bucket_coupler_pos(angles, inp_rdc):
+    bucket_x = inp_rdc*math.cos(angles[2]) - rdb*math.cos(angles[1]) + rpb*math.cos(angles[1]-betab)
+    bucket_y = inp_rdc*math.sin(angles[2]) - rdb*math.sin(angles[1]) + rpb*math.sin(angles[1]-betab)
+    return bucket_x, bucket_y
+
 # Generate solutions
 solution_gen()
 
 # Turn set into a list so it is indexable
 gen_solutions = list(gen_solutions)
 
+min_error = 1
+min_sol = None
+for sol in gen_solutions:
+    err = calc_err(sol)
+    if err < min_error:
+        min_error = err
+        min_sol = sol
 
-# Grab first solution (There will probably only be one)
-s = gen_solutions[0]
+
+s = min_sol
+
+if s is None:
+    exit("No solutions found")
+
+sol_domain = np.linspace(rdc, 1.9*rgc, 10000)
+rdc_store = rdc
+sol_set = [s]
+for x in sol_domain[1:]:
+    rdc = x
+    rdg = rdc - rgc
+    with catch_warnings(record=True):
+        new_sol = fsolve(eqs, sol_set[-1])
+        sol_set.append(new_sol)
 
 
-# Prints results
-print(f"Theta_BA = {s[0]} degrees")
+rdc = rdc_store
+rdg = rdc - rgc
+#print(sol_set)
+
+bucket_xs = []
+bucket_ys = []
+for i in range(len(sol_set)):
+    bucket_pos = bucket_coupler_pos(sol_set[i], sol_domain[i])
+    bucket_xs.append(bucket_pos[0])
+    bucket_ys.append(bucket_pos[1])
+
+
+
+
+def r_degrs(num):
+    return num/pi*180 % 360
+
+s = list(s)
+for i in range(len(s)):
+    if not i in unknown_length_indices:
+        s[i] = r_degrs(s[i])
+"""print(f"Theta_BA = {s[0]} degrees")
 print(f"Theta_DB = {s[1]} degrees")
 print(f"Theta_GC = {s[2]} degrees")
 print(f"Theta_DG = {s[3]} degrees")
 print(f"Theta_DE = {s[4]} degrees")
-print(f"Theta_EF = {s[5]} degrees")
+print(f"Theta_EF = {s[5]} degrees")"""
+
+# Theta 2, theta 3, and theta 4 plot
+plt.rcParams['font.size'] = 12
+fig1, ax1 = plt.subplots(layout='constrained')
+ax1.grid()
+ax1.plot(bucket_xs, bucket_ys, 'k', label = 'Bucket Coupler Point')
+ax1.set_xlim(0, 100)
+ax1.set_ylim(-20, 100)
+ax1.set_aspect('equal', adjustable='box')
+ax1.set_xlabel('Absolute x-coordinate (inches)')
+ax1.set_ylabel('Absolute y-coordinate (inches)')
+#   ax1.axis('square')
+ax1.legend()
+plt.savefig("BucketCouplerPoint.png", dpi=400)
