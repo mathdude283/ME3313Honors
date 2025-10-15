@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import math
 from scipy.optimize import fsolve
@@ -140,10 +141,27 @@ def solution_gen(current_guess: list[float] | None = None, guess_per_var: int = 
 
 
 # Absolute position of bucket coupler point with poiny C as the origin, positive x-axis to the right
-def bucket_coupler_pos(angles, inp_rdc):
-    bucket_x = inp_rdc*math.cos(angles[2]) - rdb*math.cos(angles[1]) + rpb*math.cos(angles[1]-betab)
-    bucket_y = inp_rdc*math.sin(angles[2]) - rdb*math.sin(angles[1]) + rpb*math.sin(angles[1]-betab)
-    return bucket_x, bucket_y
+def link_point_pos(angles):
+
+    point_c = (0, 0)
+
+    point_a = (-rca*math.cos(thetaca), -rca*math.sin(thetaca))
+
+    point_f = (rfc*math.cos(thetafc), rfc*math.sin(thetafc))
+
+    point_b = (point_a[0] + rba*math.cos(angles[0]), point_a[1] + rba*math.sin(angles[0]))
+
+    point_e = (point_f[0] + ref*math.cos(angles[5]), point_f[1] + ref*math.sin(angles[5]))
+
+    point_g = (rgc*math.cos(angles[2]), rgc*math.sin(angles[2]))
+
+    point_d = (point_e[0] + rde*math.cos(angles[4]), point_e[1] + rde*math.sin(angles[4]))
+
+    bucket = (point_b[0] + rpb*math.cos(angles[1]-betab), point_b[1] + rpb*math.sin(angles[1]-betab))
+
+    return point_a, point_b, point_c, point_d, point_e, point_f, point_g, bucket
+
+
 
 # Generate solutions
 solution_gen()
@@ -180,12 +198,40 @@ rdc = rdc_store
 rdg = rdc - rgc
 #print(sol_set)
 
-bucket_xs = []
-bucket_ys = []
+point_ax = []
+point_ay = []
+point_bx = []
+point_by = []
+point_cx = []
+point_cy = []
+point_dx = []
+point_dy = []
+point_ex = []
+point_ey = []
+point_fx = []
+point_fy = []
+point_gx = []
+point_gy = []
+bucket_x = []
+bucket_y = []
 for i in range(len(sol_set)):
-    bucket_pos = bucket_coupler_pos(sol_set[i], sol_domain[i])
-    bucket_xs.append(bucket_pos[0])
-    bucket_ys.append(bucket_pos[1])
+    point_pos = link_point_pos(sol_set[i])
+    point_ax.append(point_pos[0][0])
+    point_ay.append(point_pos[0][1])
+    point_bx.append(point_pos[1][0])
+    point_by.append(point_pos[1][1])
+    point_cx.append(point_pos[2][0])
+    point_cy.append(point_pos[2][1])
+    point_dx.append(point_pos[3][0])
+    point_dy.append(point_pos[3][1])
+    point_ex.append(point_pos[4][0])
+    point_ey.append(point_pos[4][1])
+    point_fx.append(point_pos[5][0])
+    point_fy.append(point_pos[5][1])
+    point_gx.append(point_pos[6][0])
+    point_gy.append(point_pos[6][1])
+    bucket_x.append(point_pos[7][0])
+    bucket_y.append(point_pos[7][1])
 
 
 
@@ -193,27 +239,35 @@ for i in range(len(sol_set)):
 def r_degrs(num):
     return num/pi*180 % 360
 
-s = list(s)
+"""s = list(s)
 for i in range(len(s)):
     if not i in unknown_length_indices:
         s[i] = r_degrs(s[i])
-"""print(f"Theta_BA = {s[0]} degrees")
+print(f"Theta_BA = {s[0]} degrees")
 print(f"Theta_DB = {s[1]} degrees")
 print(f"Theta_GC = {s[2]} degrees")
 print(f"Theta_DG = {s[3]} degrees")
 print(f"Theta_DE = {s[4]} degrees")
 print(f"Theta_EF = {s[5]} degrees")"""
 
-# Theta 2, theta 3, and theta 4 plot
+plot_path = os.path.join(os.path.split(os.path.split(os.path.abspath(__file__))[0])[0], "imgs", "LinkPointCoordinates.png")
+
+# Link Points Plot
 plt.rcParams['font.size'] = 12
 fig1, ax1 = plt.subplots(layout='constrained')
 ax1.grid()
-ax1.plot(bucket_xs, bucket_ys, 'k', label = 'Bucket Coupler Point')
-ax1.set_xlim(0, 100)
-ax1.set_ylim(-20, 100)
+ax1.plot(bucket_x, bucket_y, 'black', label = 'Bucket Coupler Point')
+ax1.plot(point_ax, point_ay, color='orange', marker='o', label = 'Point A')
+ax1.plot(point_bx, point_by, 'red', label = 'Point B')
+ax1.plot(point_cx, point_cy, color='green', marker='o', label = 'Point C')
+ax1.plot(point_dx, point_dy, 'blue', label = 'Point D')
+ax1.plot(point_ex, point_ey, 'purple', label = 'Point E')
+ax1.plot(point_fx, point_fy, color='gray', marker='o', label = 'Point F')
+ax1.plot(point_gx, point_gy, 'maroon', label = 'Point G')
+ax1.set_xlim(-20, 80)
+ax1.set_ylim(-20, 80)
 ax1.set_aspect('equal', adjustable='box')
 ax1.set_xlabel('Absolute x-coordinate (inches)')
 ax1.set_ylabel('Absolute y-coordinate (inches)')
-#   ax1.axis('square')
-ax1.legend()
-plt.savefig("BucketCouplerPoint.png", dpi=400)
+ax1.legend(bbox_to_anchor=(1.1, 1), loc='upper left')
+plt.savefig(plot_path, dpi=400)
