@@ -124,10 +124,6 @@ def solution_gen(current_guess: list[float] | None = None, guess_per_var: int = 
         with catch_warnings(record=True):
             sol = fsolve(eq, current_guess)
             curr_error = calc_err(sol, eq)
-            #for numb in range(len(sol)):
-                #if not numb in unkn_len_ind:
-                    #sol[numb] = sol[numb] % (2*pi)
-                #sol[numb] = round(sol[numb], 1)
             if result_check(sol) and curr_error < 0.1:
                 output.add(tuple(sol))
         return
@@ -239,7 +235,7 @@ for i in range(len(sol_set)):
 def r_degrs(num):
     return num/pi*180 % 360
 
-"""s = list(s)
+s = list(s)
 for i in range(len(s)):
     if not i in unknown_length_indices:
         s[i] = r_degrs(s[i])
@@ -248,7 +244,7 @@ print(f"Theta_DB = {s[1]} degrees")
 print(f"Theta_GC = {s[2]} degrees")
 print(f"Theta_DG = {s[3]} degrees")
 print(f"Theta_DE = {s[4]} degrees")
-print(f"Theta_EF = {s[5]} degrees")"""
+print(f"Theta_EF = {s[5]} degrees")
 
 plot_path = os.path.join(os.path.split(os.path.split(os.path.abspath(__file__))[0])[0], "imgs", "LinkPointCoordinates.png")
 
