@@ -14,6 +14,7 @@ rdb = 115.2*act_img_ratio
 rca = 49.46*act_img_ratio
 thetaca = math.radians(293.04)
 rgc = 148.5*act_img_ratio # Can't really tell from picture, but should not affect results as long as counted for accordingly
+r4 = 148.5*act_img_ratio # Can't tell for this one either
 rde = 85.65*act_img_ratio
 ref = 197.12*act_img_ratio
 rfc = 267.12*act_img_ratio
@@ -21,6 +22,33 @@ thetafc = math.radians(5.44) # angle from positive x-axis to ground link, which 
 betad = math.radians(92.47) # Angle from DB to DA
 rpb = 439.41*act_img_ratio # distance from point b to the bucket coupler point
 betab = math.radians(7.41) # Angle from rpb to rdb
+
+
+
+
+# Centers of mass
+# Lengths measured from second measured point in name
+# Angles measured CCW length vector
+lba = rba/2
+betaba = 0
+mba = 7
+
+lgc = rgc/2 # Estimate
+betagc = 0
+mgc = 7
+
+l4 = r4/2 # Estimate
+beta4 = 0
+m4 = 7
+
+lef = ref/2
+betaef = 0
+mef = 7
+
+ldb = 0.036/0.022*rdb
+betadb = math.radians(-0.2162)
+mdb = 19
+
 
 
 # Inputs
@@ -269,6 +297,16 @@ alphagc = []
 alphadg = []
 alphade = []
 alphaef = []
+ag2x = []
+ag2y = []
+ag3x = []
+ag3y = []
+ag4x = []
+ag4y = []
+ag5x = []
+ag5y = []
+ag6x = []
+ag6y = []
 
 ang_vel_sol_set = []
 ang_acc_sol_set = []
@@ -292,14 +330,35 @@ for i in range(len(sol_set)):
     bucket_y.append(point_pos[7][1])
 
     ang_vel_coeff, ang_vel_const = angular_velocity_eqs(sol_set[i][0], sol_set[i][1], sol_set[i][2], rdotdg, sol_set[i][3], sol_set[i][4], sol_set[i][5], used_inputs[i])
-    ang_vel_sol_set.append(np.linalg.solve(ang_vel_coeff, ang_vel_const))
+    curr_ang_vel = np.linalg.solve(ang_vel_coeff, ang_vel_const)
+    ang_vel_sol_set.append(curr_ang_vel)
+    omegaba.append(curr_ang_vel[0])
+    omegadb.append(curr_ang_vel[1])
+    omegagc.append(curr_ang_vel[2])
+    omegadg.append(curr_ang_vel[3])
+    omegade.append(curr_ang_vel[4])
+    omegaef.append(curr_ang_vel[5])
 
     ang_acc_coeff, ang_acc_const = angular_acceleration_eqs(sol_set[i][0], sol_set[i][1], sol_set[i][2], rdotdg, sol_set[i][3], sol_set[i][4], sol_set[i][5], used_inputs[i], rddotdg, ang_vel_sol_set[i][1], ang_vel_sol_set[i][1], ang_vel_sol_set[i][2], ang_vel_sol_set[i][3], ang_vel_sol_set[i][4], ang_vel_sol_set[i][5])
-    ang_acc_sol_set.append(np.linalg.solve(ang_acc_coeff, ang_acc_const))
+    curr_ang_acc = np.linalg.solve(ang_acc_coeff, ang_acc_const)
+    ang_acc_sol_set.append(curr_ang_acc)
+    alphaba.append(curr_ang_acc[0])
+    alphadb.append(curr_ang_acc[1])
+    alphagc.append(curr_ang_acc[2])
+    alphadg.append(curr_ang_acc[3])
+    alphade.append(curr_ang_acc[4])
+    alphaef.append(curr_ang_acc[5])
 
-
-ba_ang_vel = [point[0] for point in ang_vel_sol_set]
-ba_ang_acc = [point[0] for point in ang_acc_sol_set]
+    ag2x.append(lba*math.cos(sol_set[i][0] + betaba + math.pi) * (omegaba[-1]**2) + lba*math.cos(sol_set[i][0] + betaba + (math.pi/2)) * alphaba[-1])
+    ag2y.append(lba*math.sin(sol_set[i][0] + betaba + math.pi) * (omegaba[-1]**2) + lba*math.sin(sol_set[i][0] + betaba + (math.pi/2)) * alphaba[-1])
+    ag3x.append(rba*math.cos(sol_set[i][0] + math.pi) * (omegaba[-1]**2) + rba*math.cos(sol_set[i][0] + (math.pi/2)) * alphaba[-1] + ldb*math.cos(sol_set[i][1] + betadb + math.pi) * (omegadb[-1]**2) + ldb*math.cos(sol_set[i][1] + betadb + (math.pi/2)) * alphadb[-1])
+    ag3y.append(rba*math.sin(sol_set[i][0] + math.pi) * (omegaba[-1]**2) + rba*math.sin(sol_set[i][0] + (math.pi/2)) * alphaba[-1] + ldb*math.sin(sol_set[i][1] + betadb + math.pi) * (omegadb[-1]**2) + ldb*math.sin(sol_set[i][1] + betadb + (math.pi/2)) * alphadb[-1])
+    ag4x.append((rdc-r4)*math.cos(sol_set[i][2] + math.pi) * (omegagc[-1]**2) + (rdc-r4)*math.cos(sol_set[i][2] + (math.pi/2)) * alphagc[-1] + l4*math.cos(sol_set[i][3] + beta4 + math.pi) * (omegadg[-1]**2) + l4*math.cos(sol_set[i][3] + beta4 + (math.pi/2)) * alphadg[-1] + 2*rdotdg*math.cos(sol_set[i][3] + beta4 + (3*math.pi/2)) * omegadg[-1] + rddotdg*math.cos(sol_set[i][3] + beta4))
+    ag4y.append((rdc-r4)*math.sin(sol_set[i][2] + math.pi) * (omegagc[-1]**2) + (rdc-r4)*math.sin(sol_set[i][2] + (math.pi/2)) * alphagc[-1] + l4*math.sin(sol_set[i][3] + beta4 + math.pi) * (omegadg[-1]**2) + l4*math.sin(sol_set[i][3] + beta4 + (math.pi/2)) * alphadg[-1] + 2*rdotdg*math.sin(sol_set[i][3] + beta4 + (3*math.pi/2)) * omegadg[-1] + rddotdg*math.sin(sol_set[i][3] + beta4))
+    ag5x.append(lef*math.cos(sol_set[i][5] + betaef + math.pi) * (omegaef[-1]**2) + lef*math.cos(sol_set[i][5] + betaef + (math.pi/2)) * alphaef[-1])
+    ag5y.append(lef*math.sin(sol_set[i][5] + betaef + math.pi) * (omegaef[-1]**2) + lef*math.sin(sol_set[i][5] + betaef + (math.pi/2)) * alphaef[-1])
+    ag6x.append(lgc*math.cos(sol_set[i][2] + betagc + math.pi) * (omegagc[-1]**2) + lgc*math.cos(sol_set[i][2] + betagc + (math.pi/2)) * alphagc[-1])
+    ag6y.append(lgc*math.sin(sol_set[i][2] + betagc + math.pi) * (omegagc[-1]**2) + lgc*math.sin(sol_set[i][2] + betagc + (math.pi/2)) * alphagc[-1])
 
 def r_degrs(num):
     return num/pi*180 % 360
@@ -341,7 +400,7 @@ plt.savefig(os.path.join(plot_path, "LinkPointCoordinates.png"), dpi=400)
 plt.rcParams['font.size'] = 12
 fig1, ax1 = plt.subplots(layout='constrained')
 ax1.grid()
-ax1.plot(used_inputs, ba_ang_vel, color='black', linestyle='solid', label = '$\\omega_{ba}$')
+ax1.plot(used_inputs, omegaba, color='black', linestyle='solid', label = '$\\omega_{ba}$')
 ax1.set_xlabel('Input length (inches)')
 ax1.set_ylabel('Angular velocity (rad/s)')
 ax1.legend(bbox_to_anchor=(1.1, 1), loc='upper left')
@@ -351,8 +410,27 @@ plt.savefig(os.path.join(plot_path, "LinkBAAngVel.png"), dpi=400)
 plt.rcParams['font.size'] = 12
 fig1, ax1 = plt.subplots(layout='constrained')
 ax1.grid()
-ax1.plot(used_inputs, ba_ang_acc, color='black', linestyle='solid', label = '$\\alpha_{ba}$')
+ax1.plot(used_inputs, alphaba, color='black', linestyle='solid', label = '$\\alpha_{ba}$')
 ax1.set_xlabel('Input length (inches)')
 ax1.set_ylabel('Angular acceleration (rad/s^2)')
 ax1.legend(bbox_to_anchor=(1.1, 1), loc='upper left')
 plt.savefig(os.path.join(plot_path, "LinkBAAngAcc.png"), dpi=400)
+
+plt.rcParams['font.size'] = 12
+fig1, ax1 = plt.subplots(layout='constrained')
+ax1.grid()
+ax1.plot(used_inputs, ag2x, color='black', linestyle='solid', label = '$A_{G2x}$')
+ax1.plot(used_inputs, ag2y, color='blue', linestyle='solid', label = '$A_{G2y}$')
+ax1.set_xlabel('Input length (inches)')
+ax1.set_ylabel('Acceleration of center of gravity (m/s^2)')
+ax1.legend(bbox_to_anchor=(1.1, 1), loc='upper left')
+plt.savefig(os.path.join(plot_path, "LinkBAAccCG.png"), dpi=400)
+
+plt.rcParams['font.size'] = 12
+fig1, ax1 = plt.subplots(layout='constrained')
+ax1.grid()
+ax1.plot(ag2x, ag2y, color='black', linestyle='solid', label = '$A_{G2}$')
+ax1.set_xlabel('Acceleration of center of gravity (m/s^2)')
+ax1.set_ylabel('Acceleration of center of gravity (m/s^2)')
+ax1.legend(bbox_to_anchor=(1.1, 1), loc='upper left')
+plt.savefig(os.path.join(plot_path, "LinkBAAccCGCombined.png"), dpi=400)
