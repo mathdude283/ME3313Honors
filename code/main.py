@@ -13,7 +13,7 @@ rba = 142.27*act_img_ratio
 rdb = 115.2*act_img_ratio
 rca = 49.46*act_img_ratio
 thetaca = math.radians(293.04)
-rgc = 148.5*act_img_ratio # Can't really tell from picture, but should not affect results as long as counted for accordingly
+rgc = 148.5*act_img_ratio # Can't really tell from picture, but should not affect results as long as accounted for accordingly
 r4 = 148.5*act_img_ratio # Can't tell for this one either
 rde = 85.65*act_img_ratio
 ref = 197.12*act_img_ratio
@@ -21,46 +21,47 @@ rfc = 267.12*act_img_ratio
 thetafc = math.radians(5.44) # angle from positive x-axis to ground link, which is Rea
 betad = math.radians(92.47) # Angle from DB to DA
 rpb = 439.41*act_img_ratio # distance from point b to the bucket coupler point
-betab = math.radians(7.41) # Angle from rpb to rdb
+betab = math.radians(-7.41) # Angle from rpb to rdb
 
 
 
 
 # Centers of mass
 # Lengths measured from second measured point in name
-# Angles measured CCW length vector
+# Angles measured CCW from length vector
 lba = rba/2
 betaba = 0
-mba = 7
+m2 = 100
+ig2 = m2*(3.530*10**(-5))/0.0068241
 
 lgc = rgc/2 # Estimate
 betagc = 0
-mgc = 7
+m6 = 100
+ig6 = m6*(2.476*10**(-4))/0.0048194
 
 l4 = r4/2 # Estimate
 beta4 = 0
-m4 = 7
+m4 = 100
+ig4 = m4*(1.654*10**(-4))/0.0040303
 
 lef = ref/2
 betaef = 0
-mef = 7
+m5 = 100
+ig5 = m5*(0.001476)/0.0079326
 
 ldb = 0.036/0.022*rdb
 betadb = math.radians(-0.2162)
-mdb = 19
+m3 = 200
+ig3 = m3*(0.297341)/0.3535955
 
 
 
 # Inputs
 rdc = 173*act_img_ratio
-rdotdg = 100 # rate of change of length of hydraulic piston
-rddotdg = 0 # rate of change of rate of change of length of hydraulic piston
-
+rdotdg = 5 # rate of change of length of hydraulic piston (in/s)
+rddotdg = 0 # rate of change of rate of change of length of hydraulic piston (in/s^2)
+fp = 1000 # Weight on end of arm (lb)
 rdg = rdc - rgc # Given input length
-
-# Finds most common element in a list
-def most_common(lst: list):
-    return max(set(lst), key=lst.count)
 
 
 """
@@ -121,6 +122,42 @@ def angular_acceleration_eqs(thetaba, thetadb, thetagc, rdotdg, thetadg, thetade
         rgc*(omegagc**2)*np.sin(thetagc) - rddotdg*np.sin(thetadg) - 2*rdotdg*omegadg*np.cos(thetadg) + rdg*(omegadg**2)*np.sin(thetadg) - rde*(omegade**2)*np.sin(thetade) - ref*(omegaef**2)*np.sin(thetaef),
         0,
         0
+    ]
+
+def force_equations(thetaba, thetadb, thetagc, thetadg, thetade, thetaef, ag2x, ag2y, ag3x, ag3y, ag4x, ag4y, ag5x, ag5y, ag6x, ag6y, alpha2, alpha3, alpha4, alpha5, alpha6, rdc):
+    rdg = rdc - rgc
+    return [
+        [1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 1, 0, -1, 0, -1, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 1, 0, -1, 0, -1, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, -math.cos(thetadg + math.pi/2), 0, math.cos(thetadg)],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, -math.sin(thetadg + math.pi/2), 0, math.sin(thetadg)],
+        [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+        [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, math.cos(thetadg + math.pi/2), 0, 0],
+        [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, math.sin(thetadg + math.pi/2), 0, 0],
+        [-lba*math.sin(thetaba + math.pi), lba*math.cos(thetaba + math.pi), 0, 0, 0, 0, (rba - lba)*math.sin(thetaba), -(rba - lba)*math.cos(thetaba), 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, -ldb*math.sin(thetadb + betadb + math.pi), ldb*math.cos(thetadb + betadb + math.pi), (ldb*math.sin(thetadb + betadb + math.pi) + rdb*math.sin(thetadb)), -(ldb*math.cos(thetadb + betadb + math.pi) + rdb*math.cos(thetadb)), (ldb*math.sin(thetadb + betadb + math.pi) + rdb*math.sin(thetadb) - rde*math.sin(thetade)), -(ldb*math.cos(thetadb + betadb + math.pi) + rdb*math.cos(thetadb) - rde*math.cos(thetade)), 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, -l4*math.sin(thetadg), l4*math.cos(thetadg), 0, 0, -(l4-rdg), -1, 0],
+        [0, 0, -lef*math.sin(thetaef + math.pi), lef*math.cos(thetaef + math.pi), 0, 0, 0, 0, 0, 0, -(ref - lef)*math.sin(thetaef), (ref-lef)*math.cos(thetaef), 0, 0, 0],
+        [0, 0, 0, 0, -lgc*math.sin(thetagc + math.pi), lgc*math.cos(thetagc + math.pi), 0, 0, 0, 0, 0, 0, (rgc - lgc), 1, 0]
+    ], [
+        m2*ag2x,
+        m2*ag2y,
+        m3*ag3x,
+        m3*ag3y + fp,
+        m4*ag4x,
+        m4*ag4y,
+        m5*ag5x,
+        m5*ag5y,
+        m6*ag6x,
+        m6*ag6y,
+        ig2*alpha2,
+        ig3*alpha3 + fp*(ldb*math.cos(thetadb + betadb + math.pi) + rdb*math.cos(thetadb + betab)),
+        ig4*alpha4,
+        ig5*alpha5,
+        ig6*alpha6
     ]
 
 # Rename pi for shorter call
@@ -218,7 +255,7 @@ def link_point_pos(angles):
 
     point_d = (point_e[0] + rde*math.cos(angles[4]), point_e[1] + rde*math.sin(angles[4]))
 
-    bucket = (point_b[0] + rpb*math.cos(angles[1]-betab), point_b[1] + rpb*math.sin(angles[1]-betab))
+    bucket = (point_b[0] + rpb*math.cos(angles[1]+betab), point_b[1] + rpb*math.sin(angles[1]+betab))
 
     return point_a, point_b, point_c, point_d, point_e, point_f, point_g, bucket
 
@@ -308,6 +345,23 @@ ag5y = []
 ag6x = []
 ag6y = []
 
+
+f12x = []
+f12y = []
+f15x = []
+f15y = []
+f16x = []
+f16y = []
+f23x = []
+f23y = []
+f34x = []
+f34y = []
+f35x = []
+f35y = []
+f46 = []
+m46 = []
+fi = []
+
 ang_vel_sol_set = []
 ang_acc_sol_set = []
 for i in range(len(sol_set)):
@@ -359,6 +413,24 @@ for i in range(len(sol_set)):
     ag5y.append(lef*math.sin(sol_set[i][5] + betaef + math.pi) * (omegaef[-1]**2) + lef*math.sin(sol_set[i][5] + betaef + (math.pi/2)) * alphaef[-1])
     ag6x.append(lgc*math.cos(sol_set[i][2] + betagc + math.pi) * (omegagc[-1]**2) + lgc*math.cos(sol_set[i][2] + betagc + (math.pi/2)) * alphagc[-1])
     ag6y.append(lgc*math.sin(sol_set[i][2] + betagc + math.pi) * (omegagc[-1]**2) + lgc*math.sin(sol_set[i][2] + betagc + (math.pi/2)) * alphagc[-1])
+
+    force_coeff, force_const = force_equations(sol_set[i][0], sol_set[i][1], sol_set[i][2], sol_set[i][3], sol_set[i][4], sol_set[i][5], ag2x[i], ag2y[i], ag3x[i], ag3y[i], ag4x[i], ag4y[i], ag5x[i], ag5y[i], ag6x[i], ag6y[i], alphaba[i], alphadb[i], alphadg[i], alphaef[i], alphagc[i], used_inputs[i])
+    current_forces = np.linalg.solve(force_coeff, force_const)
+    f12x.append(current_forces[0])
+    f12y.append(current_forces[1])
+    f15x.append(current_forces[2])
+    f15y.append(current_forces[3])
+    f16x.append(current_forces[4])
+    f16y.append(current_forces[5])
+    f23x.append(current_forces[6])
+    f23y.append(current_forces[7])
+    f34x.append(current_forces[8])
+    f34y.append(current_forces[9])
+    f35x.append(current_forces[10])
+    f35y.append(current_forces[11])
+    f46.append(current_forces[12])
+    m46.append(current_forces[13])
+    fi.append(current_forces[14])
 
 def r_degrs(num):
     return num/pi*180 % 360
@@ -422,7 +494,7 @@ ax1.grid()
 ax1.plot(used_inputs, ag2x, color='black', linestyle='solid', label = '$A_{G2x}$')
 ax1.plot(used_inputs, ag2y, color='blue', linestyle='solid', label = '$A_{G2y}$')
 ax1.set_xlabel('Input length (inches)')
-ax1.set_ylabel('Acceleration of center of gravity (m/s^2)')
+ax1.set_ylabel('Acceleration of center of gravity (in/s^2)')
 ax1.legend(bbox_to_anchor=(1.1, 1), loc='upper left')
 plt.savefig(os.path.join(plot_path, "LinkBAAccCG.png"), dpi=400)
 
@@ -430,7 +502,95 @@ plt.rcParams['font.size'] = 12
 fig1, ax1 = plt.subplots(layout='constrained')
 ax1.grid()
 ax1.plot(ag2x, ag2y, color='black', linestyle='solid', label = '$A_{G2}$')
-ax1.set_xlabel('Acceleration of center of gravity (m/s^2)')
-ax1.set_ylabel('Acceleration of center of gravity (m/s^2)')
+ax1.set_aspect('equal', adjustable='box')
+ax1.set_xlabel('Acceleration of center of gravity (in/s^2)')
+ax1.set_ylabel('Acceleration of center of gravity (in/s^2)')
 ax1.legend(bbox_to_anchor=(1.1, 1), loc='upper left')
 plt.savefig(os.path.join(plot_path, "LinkBAAccCGCombined.png"), dpi=400)
+
+plt.rcParams['font.size'] = 12
+fig1, ax1 = plt.subplots(layout='constrained')
+ax1.grid()
+ax1.plot(f12x, f12y, color='black', linestyle='solid', label = '$F_{12}$')
+ax1.set_aspect('equal', adjustable='box')
+ax1.set_xlabel('$F_{12}^{x}$ (lb)')
+ax1.set_ylabel('$F_{12}^{y}$ (lb)')
+ax1.legend(bbox_to_anchor=(1.1, 1), loc='upper left')
+plt.savefig(os.path.join(plot_path, "Force12.png"), dpi=400)
+
+plt.rcParams['font.size'] = 12
+fig1, ax1 = plt.subplots(layout='constrained')
+ax1.grid()
+ax1.plot(f15x, f15y, color='black', linestyle='solid', label = '$F_{15}$')
+ax1.set_aspect('equal', adjustable='box')
+ax1.set_xlabel('$F_{15}^{x}$ (lb)')
+ax1.set_ylabel('$F_{15}^{y}$ (lb)')
+ax1.legend(bbox_to_anchor=(1.1, 1), loc='upper left')
+plt.savefig(os.path.join(plot_path, "Force15.png"), dpi=400)
+
+plt.rcParams['font.size'] = 12
+fig1, ax1 = plt.subplots(layout='constrained')
+ax1.grid()
+ax1.plot(f16x, f16y, color='black', linestyle='solid', label = '$F_{16}$')
+ax1.set_aspect('equal', adjustable='box')
+ax1.set_xlabel('$F_{16}^{x}$ (lb)')
+ax1.set_ylabel('$F_{16}^{y}$ (lb)')
+ax1.legend(bbox_to_anchor=(1.1, 1), loc='upper left')
+plt.savefig(os.path.join(plot_path, "Force16.png"), dpi=400)
+
+plt.rcParams['font.size'] = 12
+fig1, ax1 = plt.subplots(layout='constrained')
+ax1.grid()
+ax1.plot(f23x, f23y, color='black', linestyle='solid', label = '$F_{23}$')
+ax1.set_aspect('equal', adjustable='box')
+ax1.set_xlabel('$F_{23}^{x}$ (lb)')
+ax1.set_ylabel('$F_{23}^{y}$ (lb)')
+ax1.legend(bbox_to_anchor=(1.1, 1), loc='upper left')
+plt.savefig(os.path.join(plot_path, "Force23.png"), dpi=400)
+
+plt.rcParams['font.size'] = 12
+fig1, ax1 = plt.subplots(layout='constrained')
+ax1.grid()
+ax1.plot(f34x, f34y, color='black', linestyle='solid', label = '$F_{34}$')
+ax1.set_aspect('equal', adjustable='box')
+ax1.set_xlabel('$F_{34}^{x}$ (lb)')
+ax1.set_ylabel('$F_{34}^{y}$ (lb)')
+ax1.legend(bbox_to_anchor=(1.1, 1), loc='upper left')
+plt.savefig(os.path.join(plot_path, "Force34.png"), dpi=400)
+
+plt.rcParams['font.size'] = 12
+fig1, ax1 = plt.subplots(layout='constrained')
+ax1.grid()
+ax1.plot(f35x, f35y, color='black', linestyle='solid', label = '$F_{35}$')
+ax1.set_aspect('equal', adjustable='box')
+ax1.set_xlabel('$F_{35}^{x}$ (lb)')
+ax1.set_ylabel('$F_{35}^{y}$ (lb)')
+ax1.legend(bbox_to_anchor=(1.1, 1), loc='upper left')
+plt.savefig(os.path.join(plot_path, "Force35.png"), dpi=400)
+
+plt.rcParams['font.size'] = 12
+fig1, ax1 = plt.subplots(layout='constrained')
+ax1.grid()
+ax1.plot(used_inputs, f46, color='black', linestyle='solid', label = '$F_{46}$ vs input length')
+ax1.set_xlabel('Input length (in)')
+ax1.set_ylabel('$F_{46}$ (lb)')
+ax1.legend(bbox_to_anchor=(1.1, 1), loc='upper left')
+plt.savefig(os.path.join(plot_path, "Force46.png"), dpi=400)
+
+plt.rcParams['font.size'] = 12
+fig1, ax1 = plt.subplots(layout='constrained')
+ax1.grid()
+ax1.plot(used_inputs, m46, color='black', linestyle='solid', label = '$M_{46}$ vs input length$')
+ax1.set_xlabel('Input length (in)')
+ax1.set_ylabel('$M_{46}$ (lb*in)')
+ax1.legend(bbox_to_anchor=(1.1, 1), loc='upper left')
+plt.savefig(os.path.join(plot_path, "Moment46.png"), dpi=400)
+
+plt.rcParams['font.size'] = 12
+fig1, ax1 = plt.subplots(layout='constrained')
+ax1.grid()
+ax1.plot(used_inputs, fi, color='black', linestyle='solid', label = 'Input Force required vs input length')
+ax1.set_xlabel('Input length (in)')
+ax1.set_ylabel('$F_{i}$ (lb)')
+ax1.legend(bbox_to_anchor=(1.1, 1), loc='upper left')
+plt.savefig(os.path.join(plot_path, "Forcei.png"), dpi=400)
