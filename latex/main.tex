@@ -196,7 +196,14 @@
     To solve these equations, I used Python code taking advantage of the fsolve function from the SciPy library. This is a numerical solver function that takes in a set of equations and initial guesses and outputs a solution. Depending on the initial guess, this solution can be incorrect, or a valid solution but not the correct solution for the actual problem constraints. To increase the chancess significantly of a valid solution being generated, I generated a range of initial condition options for each unknown variable and then generated a solution for every combination of initial conditions. Taking these, I kept only ones that had little error when plugged back into the multiloop equations and each variable was within an estimated range of motion. The known link lengths that were plugged into the equations are shown below, and the input length is shown under that. These measurements are only estimates, however, because I found them by finding the length of the loader in its documentation, then measured the length in a side view image of the loader. I took the ratio of these, then measured each link length and and angle in the picture and multiplied each link length by the ratio to get the estimated actual link length. Angles however are not affected by scaling an image up or down though, so I used the measured angles as they were.
 
     I then took this solution and used it to find solutions along a range of input angles. Because angles that are close together will have similar solutions, I was able to start at my calculated solution and use it as the initial guess for a slightly different angle. This would quickly converge to another solution close by, yielding a correct solution. Using this new solution as my next guess, I was able to repeat this and get the solution for a range of input angles. I then wrote equations for the absolute position of each joint in the linkage, with the origin at Joint C. The vector forms of these equations are shown below in \cref{eq:point_a,eq:point_b,eq:point_c,eq:point_d,eq:point_e,eq:point_f,eq:point_g,eq:bucket_point}. Using these equations and the range of solutions I found previously I plotted the path each joint followed for that range of angles, shown in \autoref{fig:jointpath}.
+
+    Next, I took the list of angles for each input length and used these angles and the previously measured link lengths in \cref{eq:scalar-equation1-1_derivative1,eq:scalar-equation1-2_derivative1,eq:scalar-equation2-1_derivative1,eq:scalar-equation2-2_derivative1,eq:rigid-geometry1_derivative1,eq:rigid-geometry2_derivative1,eq:scalar-equation1-1_derivative2,eq:scalar-equation1-2_derivative2,eq:scalar-equation2-1_derivative2,eq:scalar-equation2-2_derivative2,eq:rigid-geometry1_derivative2,eq:rigid-geometry2_derivative2} to solve for angular velocity and angular acceleration of each point. The angular velocity and acceleration of Link BA is plotted in \autoref{fig:linkba_angvel} and \autoref{fig:linkba_angacc}.
+
+    \sethlcolor{lightgreen}\hl{The next step is to calulate the accelerations of the centers of mass of each link. These are calculated using on e equation for each, so can be solved directly without using a system of equations. These equations use relative accelerations with repect to points with known acceleration. The acceleration of Link BA can be seen in }\autoref{fig:cgacceleration}\hl{.}
+
+    \hl{The final part of the analysis is to write equations to solve for the forces and moments at each joint. The first step is to draw the free body diagrams of each link except for the ground link. Then using these, I wrote equations for the sum of forces and moments for each link. This gave me 15 equations and 15 unknowns for each angle once I set the output force. The output and input forces as well as the positions of the center of inertia of each link can be seen in }\autoref{fig:ext_forces}\hl{. These equations are all linear equations, so because there are the same number of unknowns as equations, I used the NumPy linear solver function to solve these equations at each position. The equations for each step of this analysis were written by hand and then copied into code, there is a good chance there is at least one misstake somewhere, so the results should not be held to be absolutely true without checking the equations. The plots of forces and moments I found can be seen in }\cref{fig:force12,fig:force15,fig:force16,fig:force23,fig:force34,fig:force35,fig:force46,fig:forcei,fig:moment46}\hl{.}
     
+    \FloatBarrier\section*{Vector Loop Equations}
     \begin{equation}
         \label{eq:point_a}
         \vec{A}=-\vec{R_{CA}}
@@ -237,14 +244,13 @@
         \vec{P}=-\vec{R_{CA}}+\vec{R_{BA}}+\vec{R_{PB}}
     \end{equation}
 
+    \FloatBarrier\section*{Link Plots}
     \FloatBarrier\begin{figure}[ht]
         \centering
         \includegraphics[width=1\linewidth]{LinkPointCoordinates.png}
         \caption{Path of absolute position of linkage joints}\label{fig:jointpath}
     \end{figure}
 
-    \FloatBarrier\sethlcolor{lightgreen}
-    \hl{Next, I took the list of angles for each input length and used these angles and the previously measured link lengths in }\cref{eq:scalar-equation1-1_derivative1,eq:scalar-equation1-2_derivative1,eq:scalar-equation2-1_derivative1,eq:scalar-equation2-2_derivative1,eq:rigid-geometry1_derivative1,eq:rigid-geometry2_derivative1,eq:scalar-equation1-1_derivative2,eq:scalar-equation1-2_derivative2,eq:scalar-equation2-1_derivative2,eq:scalar-equation2-2_derivative2,eq:rigid-geometry1_derivative2,eq:rigid-geometry2_derivative2}\hl{ to solve for angular velocity and angular acceleration of each point. The angular velocity and acceleration of Link BA is plotted in }\autoref{fig:linkba_angvel}\hl{ and }\autoref{fig:linkba_angacc}\hl{.}
     \FloatBarrier\begin{figure}[ht]
         \centering
         \includegraphics[width=1\linewidth]{LinkBAAngVel.png}
@@ -256,6 +262,74 @@
         \includegraphics[width=1\linewidth]{LinkBAAngAcc.png}
         \caption{Angular acceleration of Link BA vs the input length}\label{fig:linkba_angacc}
     \end{figure}
+
+    \FloatBarrier\begin{figure}[ht]
+        \centering
+        \includegraphics[width=1\linewidth]{LinkBAAccCG.png}
+        \caption{Acceleration of center of gravity of Link BA}\label{fig:cgacceleration}
+    \end{figure}
+
+    \FloatBarrier\section*{Link Forces}
+    \FloatBarrier\begin{figure}[ht]
+        \centering
+        \includegraphics[width=1\linewidth]{Forces.png}
+        \caption{Centers of inertia and external forces on the linkage}\label{fig:ext_forces}
+    \end{figure}
+
+    \FloatBarrier\begin{figure}[ht]
+        \centering
+        \includegraphics[width=1\linewidth]{Force12.png}
+        \caption{Plot of $F_{12}$}\label{fig:force12}
+    \end{figure}
+
+    \FloatBarrier\begin{figure}[ht]
+        \centering
+        \includegraphics[width=1\linewidth]{Force15.png}
+        \caption{Plot of $F_{15}$}\label{fig:force15}
+    \end{figure}
+
+    \FloatBarrier\begin{figure}[ht]
+        \centering
+        \includegraphics[width=1\linewidth]{Force16.png}
+        \caption{Plot of $F_{16}$}\label{fig:force16}
+    \end{figure}
+
+    \FloatBarrier\begin{figure}[ht]
+        \centering
+        \includegraphics[width=1\linewidth]{Force23.png}
+        \caption{Plot of $F_{23}$}\label{fig:force23}
+    \end{figure}
+
+    \FloatBarrier\begin{figure}[ht]
+        \centering
+        \includegraphics[width=1\linewidth]{Force34.png}
+        \caption{Plot of $F_{34}$}\label{fig:force34}
+    \end{figure}
+
+    \FloatBarrier\begin{figure}[ht]
+        \centering
+        \includegraphics[width=1\linewidth]{Force35.png}
+        \caption{Plot of $F_{35}$}\label{fig:force35}
+    \end{figure}
+
+    \FloatBarrier\begin{figure}[ht]
+        \centering
+        \includegraphics[width=1\linewidth]{Force46.png}
+        \caption{Plot of $F_{46}$}\label{fig:force46}
+    \end{figure}
+
+    \FloatBarrier\begin{figure}[ht]
+        \centering
+        \includegraphics[width=1\linewidth]{Forcei.png}
+        \caption{Plot of $F_{i}$}\label{fig:forcei}
+    \end{figure}
+
+    \FloatBarrier\begin{figure}[ht]
+        \centering
+        \includegraphics[width=1\linewidth]{Moment46.png}
+        \caption{Plot of $M_{46}$}\label{fig:moment46}
+    \end{figure}
+
     \FloatBarrier\section*{Link Measurements}
     \begin{align*}
         R_{BA}&=24.4 \text{ in.} \\

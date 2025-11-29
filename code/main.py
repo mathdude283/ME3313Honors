@@ -31,27 +31,32 @@ betab = math.radians(-7.41) # Angle from rpb to rdb
 # Angles measured CCW from length vector
 lba = rba/2
 betaba = 0
-m2 = 100
+#m2 = 100
+m2=20
 ig2 = m2*(3.530*10**(-5))/0.0068241
 
 lgc = rgc/2 # Estimate
 betagc = 0
-m6 = 100
+#m6 = 100
+m6=m2*0.0048194/0.0068241
 ig6 = m6*(2.476*10**(-4))/0.0048194
 
 l4 = r4/2 # Estimate
 beta4 = 0
-m4 = 100
+#m4 = 100
+m4=m2*0.0040303/0.0068241
 ig4 = m4*(1.654*10**(-4))/0.0040303
 
 lef = ref/2
 betaef = 0
-m5 = 100
+#m5 = 100
+m5=m2*0.0079326/0.0068241
 ig5 = m5*(0.001476)/0.0079326
 
 ldb = 0.036/0.022*rdb
 betadb = math.radians(-0.2162)
-m3 = 200
+#m3 = 200
+m3=m2*0.3535955/0.0068241
 ig3 = m3*(0.297341)/0.3535955
 
 
@@ -466,7 +471,7 @@ ax1.set_aspect('equal', adjustable='box')
 ax1.set_xlabel('Absolute x-coordinate (inches)')
 ax1.set_ylabel('Absolute y-coordinate (inches)')
 ax1.legend(bbox_to_anchor=(1.1, 1), loc='upper left')
-plt.savefig(os.path.join(plot_path, "LinkPointCoordinates.png"), dpi=400)
+plt.savefig(os.path.join(plot_path, "LinkPointCoordinates.png"), bbox_inches='tight', dpi=400)
 
 
 plt.rcParams['font.size'] = 12
@@ -536,7 +541,7 @@ ax1.set_aspect('equal', adjustable='box')
 ax1.set_xlabel('$F_{16}^{x}$ (lb)')
 ax1.set_ylabel('$F_{16}^{y}$ (lb)')
 ax1.legend(bbox_to_anchor=(1.1, 1), loc='upper left')
-plt.savefig(os.path.join(plot_path, "Force16.png"), dpi=400)
+plt.savefig(os.path.join(plot_path, "Force16.png"), bbox_inches='tight', dpi=400)
 
 plt.rcParams['font.size'] = 12
 fig1, ax1 = plt.subplots(layout='constrained')
@@ -580,7 +585,7 @@ plt.savefig(os.path.join(plot_path, "Force46.png"), dpi=400)
 plt.rcParams['font.size'] = 12
 fig1, ax1 = plt.subplots(layout='constrained')
 ax1.grid()
-ax1.plot(used_inputs, m46, color='black', linestyle='solid', label = '$M_{46}$ vs input length$')
+ax1.plot(used_inputs, m46, color='black', linestyle='solid', label = '$M_{46}$ vs input length')
 ax1.set_xlabel('Input length (in)')
 ax1.set_ylabel('$M_{46}$ (lb*in)')
 ax1.legend(bbox_to_anchor=(1.1, 1), loc='upper left')
