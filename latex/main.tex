@@ -199,11 +199,11 @@
 
     Next, I took the list of angles for each input length and used these angles and the previously measured link lengths in \cref{eq:scalar-equation1-1_derivative1,eq:scalar-equation1-2_derivative1,eq:scalar-equation2-1_derivative1,eq:scalar-equation2-2_derivative1,eq:rigid-geometry1_derivative1,eq:rigid-geometry2_derivative1,eq:scalar-equation1-1_derivative2,eq:scalar-equation1-2_derivative2,eq:scalar-equation2-1_derivative2,eq:scalar-equation2-2_derivative2,eq:rigid-geometry1_derivative2,eq:rigid-geometry2_derivative2} to solve for angular velocity and angular acceleration of each point. The angular velocity and acceleration of Link BA is plotted in \autoref{fig:linkba_angvel} and \autoref{fig:linkba_angacc}.
 
-    \sethlcolor{lightgreen}\hl{The next step is to calulate the accelerations of the centers of mass of each link. These are calculated using on e equation for each, so can be solved directly without using a system of equations. These equations use relative accelerations with repect to points with known acceleration. The acceleration of Link BA can be seen in }\autoref{fig:cgacceleration}\hl{.}
+    The next step is to calulate the accelerations of the centers of mass of each link. These are calculated using on e equation for each, so can be solved directly without using a system of equations. These equations use relative accelerations with repect to points with known acceleration. The acceleration of Link BA can be seen in \autoref{fig:cgacceleration}.
 
-    \hl{The final part of the analysis is to write equations to solve for the forces and moments at each joint. The first step is to draw the free body diagrams of each link except for the ground link. Then using these, I wrote equations for the sum of forces and moments for each link. This gave me 15 equations and 15 unknowns for each angle once I set the output force. The output and input forces as well as the positions of the center of inertia of each link can be seen in }\autoref{fig:ext_forces}\hl{. These equations are all linear equations, so because there are the same number of unknowns as equations, I used the NumPy linear solver function to solve these equations at each position. The equations for each step of this analysis were written by hand and then copied into code, there is a good chance there is at least one misstake somewhere, so the results should not be held to be absolutely true without checking the equations. The plots of forces and moments I found can be seen in }\cref{fig:force12,fig:force15,fig:force16,fig:force23,fig:force34,fig:force35,fig:force46,fig:forcei,fig:moment46}\hl{.}
+    The final part of the analysis is to write equations to solve for the forces and moments at each joint. The first step is to draw the free body diagrams of each link except for the ground link. Then using these, I wrote equations for the sum of forces and moments for each link. This gave me 15 equations and 15 unknowns for each angle once I set the output force. The output and input forces as well as the positions of the center of inertia of each link can be seen in \autoref{fig:ext_forces}. These equations are all linear equations, so because there are the same number of unknowns as equations, I used the NumPy linear solver function to solve these equations at each position. The plots of forces and moments I found can be seen in \cref{fig:force12,fig:force15,fig:force16,fig:force23,fig:force34,fig:force35,fig:force46,fig:forcei,fig:moment46}.
     
-    \FloatBarrier\section*{Vector Loop Equations}
+    \FloatBarrier\section*{Vector Loop Equations for Joints}
     \begin{equation}
         \label{eq:point_a}
         \vec{A}=-\vec{R_{CA}}
@@ -250,7 +250,8 @@
         \includegraphics[width=1\linewidth]{LinkPointCoordinates.png}
         \caption{Path of absolute position of linkage joints}\label{fig:jointpath}
     \end{figure}
-
+    \FloatBarrier
+    Next, I took the list of angles for each input length and used these angles and the previously measured link lengths in \cref{eq:scalar-equation1-1_derivative1,eq:scalar-equation1-2_derivative1,eq:scalar-equation2-1_derivative1,eq:scalar-equation2-2_derivative1,eq:rigid-geometry1_derivative1,eq:rigid-geometry2_derivative1,eq:scalar-equation1-1_derivative2,eq:scalar-equation1-2_derivative2,eq:scalar-equation2-1_derivative2,eq:scalar-equation2-2_derivative2,eq:rigid-geometry1_derivative2,eq:rigid-geometry2_derivative2} to solve for angular velocity and angular acceleration of each point. The angular velocity and acceleration of Link BA is plotted in \autoref{fig:linkba_angvel} and \autoref{fig:linkba_angacc}.
     \FloatBarrier\begin{figure}[ht]
         \centering
         \includegraphics[width=1\linewidth]{LinkBAAngVel.png}
@@ -263,15 +264,47 @@
         \caption{Angular acceleration of Link BA vs the input length}\label{fig:linkba_angacc}
     \end{figure}
 
+    \FloatBarrier
+    The next step is to calulate the accelerations of the centers of mass of each link. These are calculated using on e equation for each, so can be solved directly without using a system of equations. These equations use relative accelerations with repect to points with known acceleration. These equations are shown below as Eqs. 31--40. The acceleration of Link BA can be seen in \autoref{fig:cgacceleration}.
+
+    \FloatBarrier\section*{Accelerations of Link Center of Gravities}
+    \begin{gather}
+        A_{G2}^{x}=L_{BA}\cos(\theta_{BA}+\beta_{BA}+\pi)\omega_{BA}^{2}+L_{BA}\cos(\theta_{BA}+\beta_{BA}+\pi/2)\alpha_{BA} \\
+        A_{G2}^{y}=L_{BA}\sin(\theta_{BA}+\beta_{BA}+\pi)\omega_{BA}^{2}+L_{BA}\sin(\theta_{BA}+\beta_{BA}+\pi/2)\alpha_{BA} \\
+        \begin{split}
+            A_{G3}^{x}=R_{BA}\cos(\theta_{BA}+\pi)\omega_{BA}^{2}+R_{BA}\cos(\theta_{BA}+\pi/2)\alpha_{BA} \\
+            +L_{DB}\cos(\theta_{DB}+\beta_{DB}+\pi)\omega_{DB}^{2}+L_{DB}\cos(\theta_{DB}+\beta_{DB}+\pi/2)\alpha_{DB}
+        \end{split} \\
+        \begin{split}
+            A_{G3}^{y}=R_{BA}\sin(\theta_{BA}+\pi)\omega_{BA}^{2}+R_{BA}\sin(\theta_{BA}+\pi/2)\alpha_{BA} \\
+            +L_{DB}\sin(\theta_{DB}+\beta_{DB}+\pi)\omega_{DB}^{2}+L_{DB}\sin(\theta_{DB}+\beta_{DB}+\pi/2)\alpha_{DB}
+        \end{split} \\
+        \begin{split}
+            A_{G4}^{x}=(R_{DC}-R_{4})\cos(\theta_{GC}+\pi)\omega_{GC}^{2}+(R_{DC}-R_{4})\cos(\theta_{GC}+\pi/2)\alpha_{GC} \\
+            +L_{4}\cos(\theta_{DG}+\beta_{4}+\pi)\omega_{DG}^{2}+L_{4}\cos(\theta_{DG}+\beta_{4}+\pi/2)\alpha_{DG} \\
+            +2\dot{r}_{DG}\cos(\theta_{DG}+\beta_{4}+3\pi/2)\omega_{DG}^{2}+\ddot{r}_{DG}\cos(\theta_{DG}+\beta_{4})
+        \end{split} \\
+        \begin{split}
+            A_{G4}^{y}=(R_{DC}-R_{4})\sin(\theta_{GC}+\pi)\omega_{GC}^{2}+(R_{DC}-R_{4})\sin(\theta_{GC}+\pi/2)\alpha_{GC} \\
+            +L_{4}\sin(\theta_{DG}+\beta_{4}+\pi)\omega_{DG}^{2}+L_{4}\sin(\theta_{DG}+\beta_{4}+\pi/2)\alpha_{DG} \\
+            +2\dot{r}_{DG}\sin(\theta_{DG}+\beta_{4}+3\pi/2)\omega_{DG}^{2}+\ddot{r}_{DG}\sin(\theta_{DG}+\beta_{4})
+        \end{split} \\
+        A_{G5}^{x}=L_{EF}\cos(\theta_{EF}+\beta_{EF}+\pi)\omega_{EF}^{2}+L_{EF}\cos(\theta_{EF}+\beta_{EF}+\pi/2)\alpha_{EF} \\
+        A_{G5}^{y}=L_{EF}\sin(\theta_{EF}+\beta_{EF}+\pi)\omega_{EF}^{2}+L_{EF}\sin(\theta_{EF}+\beta_{EF}+\pi/2)\alpha_{EF} \\
+        A_{G6}^{x}=L_{GC}\cos(\theta_{GC}+\beta_{GC}+\pi)\omega_{GC}^{2}+L_{GC}\cos(\theta_{GC}+\beta_{GC}+\pi/2)\alpha_{GC} \\
+        A_{G6}^{y}=L_{GC}\sin(\theta_{GC}+\beta_{GC}+\pi)\omega_{GC}^{2}+L_{GC}\sin(\theta_{GC}+\beta_{GC}+\pi/2)\alpha_{GC}
+    \end{gather}
+
     \FloatBarrier\begin{figure}[ht]
         \centering
         \includegraphics[width=1\linewidth]{LinkBAAccCG.png}
         \caption{Acceleration of center of gravity of Link BA}\label{fig:cgacceleration}
     \end{figure}
-
     
-    \FloatBarrier\section*{Link Forces}
+    \FloatBarrier
+    The final part of the analysis is to write equations to solve for the forces and moments at each joint. The first step is to draw the free body diagrams of each link except for the ground link. Then using these, I wrote equations for the sum of forces and moments for each link. This gave me 15 equations and 15 unknowns for each angle once I set the output force. These equations can be seen below as Eqs. 41--55. The output and input forces as well as the positions of the center of inertia of each link can be seen in \autoref{fig:ext_forces}. These equations are all linear equations, so because there are the same number of unknowns as equations, I used the NumPy linear solver function to solve these equations at each position. The plots of forces and moments I found can be seen in \cref{fig:force12,fig:force15,fig:force16,fig:force23,fig:force34,fig:force35,fig:force46,fig:forcei,fig:moment46}.
 
+    \FloatBarrier\section*{Link Forces}
     \begin{gather}
         F_{12}^{x}-F_{23}^{x}=m_{2}A_{G2}^{x} \\
         F_{12}^{y}-F_{23}^{y}=m_{2}A_{G2}^{y} \\
@@ -389,24 +422,11 @@
         \beta_{D}&=92.47^\circ \\
     \end{align*}
 
-    \FloatBarrier\section*{Input Link Length}
-    \begin{equation*}
-        R_{DC}=29.72 \text{ in.}
-    \end{equation*}
+    \FloatBarrier\section*{Conclusion}
+    Linkages are an integral part of many mechanisms because they can provide mechanical advantage and move things along a non-straight path. Because the path is not simple however, the math and physics of the linkage become more complicated and most linkages beyond a four-bar linkage require using numerical methods to analyze the linkage. To use a numerical solver to analyze the linkage, you still need to know how to write the kinetic and kinematic equations of the linkage as well as how to solve these systems of equations with a solver. This project of analyzing a linkage on a skid-steer bucket loader helped me to practice these skills and discover difficulties in the process that are abstracted away when analyzing a linkage in a homework problem.
         
     \FloatBarrier\section*{Multiloop Solver Code}
     
     \inputminted[python3=true]{python}{../code/main.py}
-
-    \section*{Multiloop Solver Output}
-    \begin{minted}[linenos=false]{pwsh-session}
-PS C:\...\Honors> python code/main.py
-Theta_BA = 82.249 degrees
-Theta_DB = 335.111 degrees
-Theta_GC = 52.91 degrees
-Theta_DG = 52.91 degrees
-Theta_DE = 67.581 degrees
-Theta_EF = 170.215 degrees
-    \end{minted}
 
 \end{document}
