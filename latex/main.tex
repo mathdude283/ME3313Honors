@@ -269,7 +269,52 @@
         \caption{Acceleration of center of gravity of Link BA}\label{fig:cgacceleration}
     \end{figure}
 
+    
     \FloatBarrier\section*{Link Forces}
+
+    \begin{gather}
+        F_{12}^{x}-F_{23}^{x}=m_{2}A_{G2}^{x} \\
+        F_{12}^{y}-F_{23}^{y}=m_{2}A_{G2}^{y} \\
+        F_{23}^{x}-F_{34}^{x}-F_{35}^{x}=m_{3}A_{G3}^{x} \\
+        F_{23}^{y}-F_{34}^{y}-F_{35}^{y}-F_{P}=m_{3}A_{G3}^{y} \\
+        F_{34}^{x}+F_{i}\cos(\theta_{DG})-F_{46}^{x}\cos(\theta_{DG}+90^{\circ})=m_{4}A_{G4}^{x} \\
+        F_{34}^{y}+F_{i}\sin(\theta_{DG})-F_{46}^{y}\sin(\theta_{DG}+90^{\circ})=m_{4}A_{G4}^{y} \\
+        F_{15}^{x}+F_{35}^{x}=m_{5}A_{G5}^{x} \\
+        F_{15}^{y}+F_{35}^{y}=m_{5}A_{G5}^{y} \\
+        F_{16}^{x}+F_{46}\cos(\theta_{DG}+90^{\circ})=m_{6}A_{G6}^{x} \\
+        F_{16}^{y}+F_{46}\sin(\theta_{DG}+90^{\circ})=m_{6}A_{G6}^{y}
+    \end{gather}
+
+    \begin{equation}
+        \begin{split}
+            -F_{12}^{x}L_{BA}\sin(\theta_{BA}+180^{\circ})+F_{12}^{y}L_{BA}\cos(\theta_{BA}+180^{\circ}) \\
+            +F_{23}^{x}(R_{BA}-L_{BA})\sin(\theta_{BA})-F_{23}^{y}(R_{BA}-L_{BA})\cos(\theta_{BA})=I_{G2}\alpha_{2}
+        \end{split}
+    \end{equation}
+    \begin{equation}
+        \begin{split}
+            -F_{23}^{x}L_{DB}\sin(\theta_{DB}+\beta_{DB}+180^{\circ})+F_{23}^{y}L_{DB}\cos(\theta_{DB}+\beta_{DB}+180^{\circ}) \\
+            -F_{P}(L_{DB}\cos(\theta_{DB}+\beta_{DB}+180^{\circ})+R_{DB}\cos(\theta_{DB}+\beta_{B})) \\
+            +F_{35}^{x}(L_{DB}\sin(\theta_{DB}+\beta_{DB}+180^{\circ})+R_{DB}\sin(\theta_{DB})-R_{DE}\sin(\theta_{DE})) \\
+            -F_{35}^{y}(L_{DB}\cos(\theta_{DB}+\beta_{DB}+180^{\circ})+R_{DB}\cos(\theta_{DB})-R_{DE}\cos(\theta_{DE})) \\
+            +F_{34}^{x}(L_{DB}\sin(\theta_{DB}+\beta_{DB}+180^{\circ})+R_{DB}\sin(\theta_{DB})) \\
+            -F_{34}^{y}(L_{DB}\cos(\theta_{DB}+\beta_{DB}+180^{\circ})+R_{DB}\cos(\theta_{DB}))=I_{G3}\alpha_{3}
+        \end{split}
+    \end{equation}
+    \begin{equation}
+        -M_{46}-F_{46}(L_{4}-R_{DG})-F_{34}^{x}L_{4}\sin(\theta_{DG})+F_{34}^{y}L_{4}\cos(\theta_{DG})=I_{G4}\alpha_{4}
+    \end{equation}
+    \begin{equation}
+        \begin{split}
+            -F_{35}^{x}(R_{EF}-L_{EF})\sin(\theta_{EF})+F_{35}^{y}(R_{EF}-L_{EF})\cos(\theta_{EF}) \\
+            -F_{15}^{x}L_{EF}\sin(\theta_{EF}+180^{\circ})+F_{15}^{y}L_{EF}\cos(\theta_{EF}+180^{\circ})=I_{G5}\alpha_{5}
+        \end{split}
+    \end{equation}
+    \begin{equation}
+        M_{46}+F_{46}(R_{GC}-L_{GC})-F_{16}^{x}L_{GC}\sin(\theta_{GC}+180^{\circ})+F_{16}^{y}L_{GC}\cos(\theta_{GC}+180^{\circ})=I_{G6}\alpha_{6}
+    \end{equation}
+
+
     \FloatBarrier\begin{figure}[ht]
         \centering
         \includegraphics[width=1\linewidth]{Forces.png}
